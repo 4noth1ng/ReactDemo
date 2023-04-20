@@ -1,8 +1,10 @@
 import React, { useRef } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useReducer } from "react";
 import CartItem from "./CartItem";
 import getGoods from "../../utils/api";
 import ItemCount from "./ItemCount";
+import CartReducer from "./CartReducer";
+import useChecked from "./useChecked";
 
 type CheckMap = {
   [id: number]: boolean;
@@ -16,35 +18,51 @@ type CartItem = {
 
 function Cart() {
   let [goodsList, setGoodsList] = useState([]);
-  const [checkMap, setCheckMap] = useState<CheckMap>({});
-  const handleChecked = (cartItem: CartItem, checked: boolean) => {
-    const { id } = cartItem;
-    const newCheckedMap = Object.assign({}, checkMap, {
-      [id]: checked,
-    });
-    setCheckMap(newCheckedMap);
-  };
-  const handleCheckedRef = useRef(handleChecked);
-  useEffect(() => {
-    handleCheckedRef.current = handleChecked;
-  });
+  // const [checkMap, setCheckMap] = useState<CheckMap>({});
 
-  const filterCheckedCartItem = Object.entries(checkMap)
-    .filter((entries) => Boolean(entries[1]))
-    .map(([checkedId]) => goodsList[Number(checkedId)]);
+  const {
+    checkMap,
+    handleCheckAll,
+    handleChecked,
+    handleCheckedRef,
+    filterCheckedCartItem,
+    isCheckedAll,
+  } = useChecked(goodsList);
 
-  const isCheckedAll =
-    filterCheckedCartItem.length === goodsList.length && !goodsList.length;
-  const handleCheckAll = (newCheckAll: boolean) => {
-    const newCheckedMap = {};
-    if (newCheckAll) {
-      goodsList.forEach(({ id }) => {
-        Reflect.set(newCheckedMap, id, true);
-      });
-    }
+  // const handleChecked = (cartItem: CartItem, checked: boolean) => {
+  //   const { id } = cartItem;
+  //   const newCheckedMap = Object.assign({}, checkMap, {
+  //     [id]: checked,
+  //   });
+  //   setCheckMap(newCheckedMap);
+  // };
+  // const handleChecked = (cartItem: CartItem, checked: boolean) => {
+  //   dispatchCheckMap({
+  //     type: "CHECKED_CHANGE",
+  //     payload: {
+  //       cartItem,
+  //       checked,
+  //     },
+  //   });
+  // };
 
-    setCheckMap(newCheckedMap);
-  };
+  // const handleCheckAll = (newCheckAll: boolean) => {
+  //   // const newCheckedMap = {};
+  //   // if (newCheckAll) {
+  //   //   goodsList.forEach(({ id }) => {
+  //   //     Reflect.set(newCheckedMap, id, true);
+  //   //   });
+  //   // }
+
+  //   // setCheckMap(newCheckedMap);
+  //   dispatchCheckMap({
+  //     type: "CHECK_ALL",
+  //     payload: {
+  //       newCheckAll,
+  //       goodsList,
+  //     },
+  //   });
+  // };
 
   useEffect(() => {
     getGoods().then((res: any) => {
